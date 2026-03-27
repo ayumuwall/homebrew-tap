@@ -1,8 +1,8 @@
 class Zshift < Formula
   desc "Supercharged Ctrl+T file navigation for zsh with directory browsing"
   homepage "https://github.com/ayumuwall/zshift"
-  url "https://github.com/ayumuwall/zshift/archive/refs/tags/v0.1.1.tar.gz"
-  sha256 "9baa278df1a201abda5e718823177771f03d368a9ad575d86740cf703d768953"
+  url "https://github.com/ayumuwall/zshift/archive/refs/tags/v0.1.2.tar.gz"
+  sha256 "40beac8b59b891dc63999818013cbd56658feaf312e07fff43116a750adc9e02"
   license "MIT"
 
   depends_on "fzf"
