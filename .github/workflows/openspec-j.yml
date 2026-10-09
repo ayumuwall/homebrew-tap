@@ -16,14 +16,25 @@ concurrency:
   group: openspec-j-update
   cancel-in-progress: false
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.formula.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - id: formula
+        env:
+          VERSION: ${{ inputs.version || github.event.client_payload.version }}
+        run: python3 scripts/update-openspec-j.py
   verify:
+    needs: prepare
     strategy:
       fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
     env:
-      VERSION: ${{ inputs.version || github.event.client_payload.version }}
+      VERSION: ${{ needs.prepare.outputs.version }}
       HOMEBREW_NO_AUTO_UPDATE: '1'
       OPENSPEC_TELEMETRY: '0'
     steps:
@@ -38,15 +49,19 @@ jobs:
           brew test ayumuwall/tap/openspec-j
           openspec --version
           openspec version --help
+          if [[ "$GITHUB_EVENT_NAME" != push ]]; then
+            brew update
+            brew upgrade ayumuwall/tap/openspec-j
+          fi
           brew uninstall openspec-j
   publish:
     if: github.event_name != 'push'
-    needs: verify
+    needs: [prepare, verify]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     env:
-      VERSION: ${{ inputs.version || github.event.client_payload.version }}
+      VERSION: ${{ needs.prepare.outputs.version }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Generate verified formula
