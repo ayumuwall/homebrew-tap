@@ -51,8 +51,10 @@ jobs:
           openspec version --help
           if [[ "$GITHUB_EVENT_NAME" != push ]]; then
             brew update
+            python3 scripts/update-openspec-j.py
             brew upgrade ayumuwall/tap/openspec-j
           fi
+          test "$(openspec --version)" = "$VERSION"
           brew uninstall openspec-j
   publish:
     if: github.event_name != 'push'
