@@ -1,0 +1,61 @@
+name: Update OpenSpec-J
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Stable npm version (blank uses latest)
+        required: false
+        type: string
+  repository_dispatch:
+    types: [openspec-j-published]
+  push:
+    branches: [openspec-j-setup]
+permissions:
+  contents: read
+concurrency:
+  group: openspec-j-update
+  cancel-in-progress: false
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      VERSION: ${{ inputs.version || github.event.client_payload.version }}
+      HOMEBREW_NO_AUTO_UPDATE: '1'
+      OPENSPEC_TELEMETRY: '0'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - run: python3 scripts/update-openspec-j.py
+      - uses: Homebrew/actions/setup-homebrew@9ffcbcc2c89631400988e8d4b1e3ac17dbbe3fe9
+        with:
+          stable: true
+      - name: Install and test formula
+        run: |
+          brew install --build-from-source ayumuwall/tap/openspec-j
+          brew test ayumuwall/tap/openspec-j
+          openspec --version
+          openspec version --help
+          brew uninstall openspec-j
+  publish:
+    if: github.event_name != 'push'
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ inputs.version || github.event.client_payload.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Generate verified formula
+        run: python3 scripts/update-openspec-j.py
+      - name: Commit and push
+        run: |
+          if git diff --quiet -- Formula/openspec-j.rb; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Formula/openspec-j.rb
+          git commit -m 'chore: update OpenSpec-J formula'
+          git push origin HEAD:main
