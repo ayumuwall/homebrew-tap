@@ -1,9 +1,9 @@
 class OpenspecJ < Formula
   desc "Japanese localization of OpenSpec for spec-driven development"
   homepage "https://github.com/ayumuwall/OpenSpec-J"
-  url "https://registry.npmjs.org/@ayumuwall/openspec/-/openspec-1.14.1.tgz"
-  version "1.14.1"
-  sha256 "e233c83b1a2f898c5ec12982a83b4b2ff24827dc9cc3fcd4fc848fb1a807a39f"
+  url "https://registry.npmjs.org/@ayumuwall/openspec/-/openspec-1.15.0.tgz"
+  version "1.15.0"
+  sha256 "424b3b3a9b9a89fcf590c116880f801cb6a482b38c8a6c8ed4f3f419d8c5dd5d"
   license "MIT"
 
   depends_on "node"
